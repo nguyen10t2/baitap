@@ -1,40 +1,75 @@
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 typedef struct {
     int day;
     int month;
     int year;
 } Date;
+typedef struct {
+    int hour;
+    int min;
+} Time;
 
+Date date1, date2;
+Time time1, time2;
+
+int leapYear(int year) {
+    return (year % 400 == 0) || (year % 100 != 0 && year % 4 == 0);
+}
 void scanfDate(Date* date, char* value) {
    sscanf(value, "%d-%d-%d", &(date->day), &(date->month), &(date->year));
 }
-
-int zeller(Date* date) {
-    if(date->month == 1) {date->month = 13; date->year--;}
-    if(date->month == 2) {date->month = 14; date->year--;}
-    int year = date->year % 100;
-    int century = date->year / 100;
-    int H = date->day + (13 * (date->month + 1)) / 5 + year + year / 4 + century / 4 + 5 * century;
-    H %= 7;
-    return H;
+void scanfTime(Time* time, char* value) {
+    sscanf(value, "%d:%d", &(time->hour), &(time->min));
 }
-void solution(int value) {
-    if(value == 0) printf("Saturday\0");
-    if(value == 1) printf("Sunday\0");
-    if(value == 2) printf("Monday\0");
-    if(value == 3) printf("Tuesday\0");
-    if(value == 4) printf("Wednesday\0");
-    if(value == 5) printf("Thursday\0");
-    if(value == 6) printf("Friday\0");
+int daysInMonth(int month, int year) {
+    int daysOfMonth[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    daysOfMonth[2] += leapYear(year);
+    return daysOfMonth[month];
+}
+int dateToDays(Date* date) {
+    int totalDays = 0;
+    for (int y = 1; y < date->year; y++) {
+        totalDays += leapYear(y) ? 366 : 365;
+    }
+    for (int m = 1; m < date->month; m++) {
+        totalDays += daysInMonth(m, date->year);
+    }
+    totalDays += date->day;
+    return totalDays;
+}
+int subtractDate(Date* date1, Date* date2, Time* time1, Time* time2) {
+    int days1 = dateToDays(date1);
+    int days2 = dateToDays(date2);
+    int totalMinutes1 = time1->hour * 60 + time1->min;
+    int totalMinutes2 = time2->hour * 60 + time2->min;
+    int dayDifference = days2 - days1;
+    int minuteDifference = totalMinutes2 - totalMinutes1;
+    double totalDifferenceInHours = (double)dayDifference * 24 + minuteDifference / 60.0;
+
+    return (int)ceil(totalDifferenceInHours);
+}
+int solution(int key) {
+    int value = subtractDate(&date1, &date2, &time1, &time2);
+    switch(key) {
+        case 1:
+            printf("%d", 30000 * value);
+            break;
+        case 2:
+            printf("%d", 35000 * value);
+        default:
+            break;
+    }
 }
 int main() {
-    Date date;
-    char key[20];
-    scanf("%s", key);
-    scanfDate(&date, key);
-    // char enum[7][20] = {"Saturday\0", "Sunday\0", "Monday\0", "Tuesday\0", "Wednesday\0", "Thursday\0", "Friday\0"};
-    solution(zeller(&date));
+    char key1[20], key2[20], h1[10], h2[10];
+    int type;
+    scanf("%d", &type);
+    scanf("%s %s %s %s", key1, h1, key2, h2);
+    scanfDate(&date1, key1); scanfDate(&date2, key2);
+    scanfTime(&time1, h1)  ; scanfTime(&time2, h2);
+    solution(type);
     return 0;
 }
