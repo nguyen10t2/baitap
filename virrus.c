@@ -10,11 +10,7 @@ typedef struct {
 void scanfDate(Date* date, char* value) {
    sscanf(value, "%d-%d-%d", &(date->day), &(date->month), &(date->year));
 }
-void setMonth(int* month) {
-    if(*month < 3) {
-        *month += 12;
-    }
-}
+
 int zeller(Date* date) {
     if(date->month == 1) {date->month = 13; date->year--;}
     if(date->month == 2) {date->month = 14; date->year--;}
